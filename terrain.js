@@ -1,16 +1,16 @@
 
 import * as THREE from 'three';
-import { createNoise2D } from 'simplex-noise';
-
-export default function terrain({ scene, camera }) {
+export default function terrain(noise2D, { scene, camera }, ox = 0, oz = 0) {
   // 2. Create the Plane
-  const geometry = new THREE.PlaneGeometry(2**13, 2**13, 256, 512*8); // 100 subdivisions
+  const geometry = new THREE.PlaneGeometry(1024, 1024, 256, 256); // 100 subdivisions
 
-  // 3. Generate Simplex Noise
-  const noise2D = createNoise2D();
   const vertices = geometry.attributes.position.array;
+  
   for (let i = 0; i < vertices.length; i += 3) {
-    vertices[i + 2] = noise2D(vertices[i] / 100, vertices[i + 1] / 100) * 20; // Modify Z based on noise
+    const layeredNoise = [64, 128, 256, 512, 1024, 1024*2, 1024*4, 1024*8, 1024*16, 1024*32].reduce((acc, scale) => {
+      return acc + noise2D(vertices[i]/scale + ox / scale, vertices[i + 1] / scale + oz / scale) * (scale*0.5) ** 0.5
+    },0 )
+    vertices[i + 2] = layeredNoise; // Modify Z based on noise
   }
 
   geometry.computeVertexNormals(); // To smooth the shading
@@ -21,6 +21,8 @@ export default function terrain({ scene, camera }) {
   plane.rotation.y = -Math.PI
   plane.rotation.x = Math.PI*0.5
   const dirLight = new THREE.DirectionalLight(0xffeedd, 2);
+ plane.position.x = -ox
+  plane.position.z = -oz
   // dirLight.position = new THREE.Vector3(1, 1, 1)
   scene.add(dirLight)
   scene.add(plane);

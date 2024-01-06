@@ -6,6 +6,8 @@ import bumpy from './bumpy'
 import cards from './cards';
 import terrain from './terrain';
 
+import { createNoise2D } from 'simplex-noise';
+
 const app = document.getElementById('app')
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -17,9 +19,12 @@ const controls = new OrbitControls(camera, renderer.domElement);
 
 const bumpyPlane = bumpy({ app, scene, camera, renderer })
 
+  // 3. Generate Simplex Noise
+  const noise2D = createNoise2D();
 cards({ scene })
 
-terrain({ scene, camera })
+terrain(noise2D, { scene, camera }, 0, 0)
+terrain(noise2D, { scene }, 1024, 0)
 const light = new THREE.PointLight(0xffffff, 1, 100);
 light.position.set(1, 1, 1);
 scene.add(light);
