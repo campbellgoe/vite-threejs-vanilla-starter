@@ -10,21 +10,25 @@ import { createNoise2D } from 'simplex-noise';
 
 const app = document.getElementById('app')
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 app.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
-
+const dirLight = new THREE.DirectionalLight(0xffeedd, 2);// dirLight.position = new THREE.Vector3(1, 1, 1)
+  scene.add(dirLight)
 const bumpyPlane = bumpy({ app, scene, camera, renderer })
 
   // 3. Generate Simplex Noise
   const noise2D = createNoise2D();
 cards({ scene })
 
-terrain(noise2D, { scene, camera }, 0, 0)
-terrain(noise2D, { scene }, 1024, 0)
+for(let y = 0; y < 10; y++){
+  for(let x = 0; x < 10; x++){
+  terrain(noise2D, { scene, camera }, x*1024, y*1024)
+  }
+}
 const light = new THREE.PointLight(0xffffff, 1, 100);
 light.position.set(1, 1, 1);
 scene.add(light);
