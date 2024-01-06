@@ -2,11 +2,12 @@
 import * as THREE from 'three';
 
 export default function bumpy({ scene }){
-  const planeGeometry = new THREE.PlaneGeometry(100, 100, 6, 6)
+  const planeGeometry = new THREE.PlaneGeometry(1024, 1024, 100, 100)
 const vertexShader = `
 varying vec2 vUv;
 varying vec3 vNormal;
 
+uniform float iTime;
 // Basic noise-like function
 float pseudoNoise(vec3 point) {
     return fract(sin(dot(point.xyz, vec3(12.9898, 78.233, 45.5432))) * 43758.5453);
@@ -16,7 +17,7 @@ void main() {
     vUv = uv;
 
     // Modify the z position based on noise
-    float noise = pseudoNoise(position);
+    float noise = pseudoNoise(vec3(sin(iTime)/2.+.5));
     vec3 pos = position;
     pos.z += noise * 10.0; // Adjust the multiplier to change the height variation
 
@@ -28,6 +29,7 @@ void main() {
 const fragmentShader = `
 varying vec2 vUv;
 varying vec3 vNormal;
+
 
 void main() {
     // Simple directional light properties
@@ -51,7 +53,12 @@ void main() {
 
 const planeMaterial = new THREE.ShaderMaterial({
   vertexShader: vertexShader,
-  fragmentShader: fragmentShader
+  fragmentShader: fragmentShader,
+  uniforms: {
+    iTime: {
+      value: 0
+    }
+  }
 });
 const plane = new THREE.Mesh(planeGeometry, planeMaterial);
 scene.add(plane);
