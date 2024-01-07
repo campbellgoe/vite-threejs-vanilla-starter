@@ -10,7 +10,7 @@ import { createNoise2D } from 'simplex-noise';
 
 const app = document.getElementById('app')
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 30000);
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 app.appendChild(renderer.domElement);
@@ -27,12 +27,17 @@ let ox = 0
 let oz = 0
 let map = new Map()
 function createChunks(ox = 0, oy = 0){
-  for(let y = -2; y < 2; y++){
-    for(let x = -2; x < 2; x++){
+  for(let y = -4; y < 4; y++){
+    for(let x = -4; x < 4; x++){
       if(map.has(`${x-ox},${y+oy}`)) continue;
     const plane = terrain(noise2D, { scene, camera }, x*2048-ox*2048, y*2048+oy*2048, 2048, 2048, [512, 2048, 8192, 32768])
     map.set(`${x-ox},${y+oy}`, true)
     }
+  }
+}
+for(let y = -8; y < 8; y++){
+  for(let x = -8; x < 8; x++){
+createChunks(x, y)
   }
 }
 const light = new THREE.PointLight(0xffffff, 1, 100);

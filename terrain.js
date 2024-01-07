@@ -9,7 +9,7 @@ export default function terrain(noise2D, { scene, camera }, ox = 0, oz = 0, w, h
 
  for (let i = 0; i < vertices.length; i += 3) {
      const layeredNoise = layers.reduce((acc, scale) => {
-         return acc + noise2D((vertices[i] + ox) / scale, (vertices[i + 1] + oz) / scale) * Math.sqrt(scale * 0.72);
+         return acc + noise2D((vertices[i] + ox) / scale, (vertices[i + 1] + oz) / scale) * Math.sqrt(scale * 0.8);
      }, 0);
      vertices[i + 2] = layeredNoise; // Modify Z based on noise
  }
