@@ -26,12 +26,12 @@ cards({ scene })
 let ox = 0
 let oz = 0
 let map = new Map()
-function createChunks(ox, oy){
+function createChunks(ox = 0, oy = 0){
   for(let y = -2; y < 2; y++){
     for(let x = -2; x < 2; x++){
-      if(map.has(`${x+ox},${y+oy}`)) continue
+      if(map.has(`${x-ox},${y+oy}`)) continue;
     const plane = terrain(noise2D, { scene, camera }, x*2048-ox*2048, y*2048+oy*2048, 2048, 2048, [512, 2048, 8192, 32768])
-    map.set(`${x+ox},${y+oy}`, true)
+    map.set(`${x-ox},${y+oy}`, true)
     }
   }
 }

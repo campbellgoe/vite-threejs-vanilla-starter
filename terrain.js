@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 export default function terrain(noise2D, { scene, camera }, ox = 0, oz = 0, w, h, layers = [w/4, w/2, w]) {
  // 2. Create the Plane
- const geometry = new THREE.PlaneGeometry(w, h, 256, 256);
+ const geometry = new THREE.PlaneGeometry(w, h, 32, 32);
 
  const vertices = geometry.attributes.position.array;
 
