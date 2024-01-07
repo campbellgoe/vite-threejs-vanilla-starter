@@ -17,10 +17,10 @@ void main() {
     vUv = uv;
 
     // Modify the z position based on noise
-    float noise = pseudoNoise(vec3(sin(iTime)/2.+.5));
+    float noise = pseudoNoise(position);
     vec3 pos = position;
     pos.z += noise * 10.0; // Adjust the multiplier to change the height variation
-
+    pos.z += sin(iTime*0.1)*0.1;
     vNormal = normalMatrix * normal; // Transform the normal to camera space
     gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
 }`;

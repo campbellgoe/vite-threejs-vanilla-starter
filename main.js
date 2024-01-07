@@ -23,10 +23,16 @@ const bumpyPlane = bumpy({ app, scene, camera, renderer })
   // 3. Generate Simplex Noise
   const noise2D = createNoise2D();
 cards({ scene })
-
-for(let y = 0; y < 10; y++){
-  for(let x = 0; x < 10; x++){
-  terrain(noise2D, { scene, camera }, x*1024, y*1024)
+let ox = 0
+let oz = 0
+let map = new Map()
+function createChunks(ox, oy){
+  for(let y = -2; y < 2; y++){
+    for(let x = -2; x < 2; x++){
+      if(map.has(`${x+ox},${y+oy}`)) continue
+    const plane = terrain(noise2D, { scene, camera }, x*2048-ox*2048, y*2048+oy*2048, 2048, 2048, [512, 2048, 8192, 32768])
+    map.set(`${x+ox},${y+oy}`, true)
+    }
   }
 }
 const light = new THREE.PointLight(0xffffff, 1, 100);
@@ -38,14 +44,18 @@ camera.position.y = 10
 
 
 let t0, t1
-let deltaTime = 0
+let deltaTime = 0.001
 function animate() {
-  t0 = performance.now()
+  t0 = Date.now()
   requestAnimationFrame(animate);
   controls.update(); // Only required if controls.enableDamping = true, or if controls.autoRotate = true
-  bumpyPlane.material.uniforms.iTime.value += deltaTime/100000000;
+  ox = Math.floor(camera.position.x/2048)
+  oz = Math.floor(camera.position.z/2048)
+  console.log(camera.position.x, camera.position.z, ox, oz)
+  createChunks(ox, oz)
+  bumpyPlane.material.uniforms.iTime.value += deltaTime/1000;
   renderer.render(scene, camera);
-  t1 = performance.now()
+  t1 = Date.now()
   deltaTime = t1-t0
   const fps = 1000/(t1-t0)
 }

@@ -272,6 +272,11 @@ source-map-js@^1.0.2:
   resolved "https://registry.yarnpkg.com/source-map-js/-/source-map-js-1.0.2.tgz#adbc361d9c62df380125e7f161f71c826f1e490c"
   integrity sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==
 
+three-hex-tiling@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/three-hex-tiling/-/three-hex-tiling-0.1.1.tgz#49ad8e494d2c3c09ac603794a02251bfa7554066"
+  integrity sha512-j0Z/YM4n0A00UYoLJaCMpWTBIItleNr1RsOsLutIF+NS2I7WKv6nHKuo82SdgFf3vLgbau3wSGOwZejLwqwg7g==
+
 three@^0.159.0:
   version "0.159.0"
   resolved "https://registry.yarnpkg.com/three/-/three-0.159.0.tgz#6576b1210805b14f0765bac41fd0e4ec18e43b2e"
