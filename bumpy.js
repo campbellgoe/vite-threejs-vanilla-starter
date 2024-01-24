@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 
 export default function bumpy({ scene }){
-  const planeGeometry = new THREE.PlaneGeometry(1024, 1024, 100, 100)
+  const planeGeometry = new THREE.PlaneGeometry(1024**4, 1024**4, 256, 256)
 const vertexShader = `
 varying vec2 vUv;
 varying vec3 vNormal;
@@ -29,40 +29,71 @@ void main() {
 const fragmentShader = `
 varying vec2 vUv;
 varying vec3 vNormal;
+uniform vec2 iResolution;
+uniform float iTime;
 
 
+//Calculate the squared length of a vector
+float length2(vec2 p){
+    return dot(p,p);
+}
+
+//Generate some noise to scatter points.
+float noise(vec2 p){
+	return fract(sin(fract(sin(p.x) * (43.13311)) + p.y) * 31.0011);
+}
+
+float worley(vec2 p) {
+    //Set our distance to infinity
+	float d = 1e30;
+    //For the 9 surrounding grid points
+	for (int xo = -1; xo <= 1; ++xo) {
+		for (int yo = -1; yo <= 1; ++yo) {
+            //Floor our vec2 and add an offset to create our point
+			vec2 tp = floor(p) + vec2(xo, yo);
+            //Calculate the minimum distance for this grid point
+            //Mix in the noise value too!
+			d = min(d, length2(p - tp - noise(tp)));
+		}
+	}
+	return 3.0*exp(-4.0*abs(2.5*d - 1.0));
+}
+
+float fworley(vec2 p) {
+    //Stack noise layers 
+	return sqrt(sqrt(sqrt(
+		worley(p*5.0 + 0.05*iTime) *
+		sqrt(worley(p * 50.0 + 0.12 + -0.1*iTime)) *
+		sqrt(sqrt(worley(p * -10.0 + 0.03*iTime))))));
+}
 void main() {
-    // Simple directional light properties
-    vec3 lightColor = vec3(1.0, 1.0, 1.0);
-    vec3 lightDir = normalize(vec3(0.5, 1.0, 0.75)); // Direction to the light source
-    float ambientStrength = 0.1;
+  //Calculate an intensity
+  float t = fworley(vUv * iResolution.xy / 15000.0);
+  //Add some gradient
+  t*=exp(-length2(abs(0.7*vUv - 1.0)));	
+  //Make it blue!
+  gl_FragColor = vec4(t * vec3(0.1, 1.1*t, pow(t, 0.5-t)), 0.7);
+}
 
-    // Ambient lighting
-    vec3 ambient = ambientStrength * lightColor;
-
-    // Diffuse lighting
-    float diff = max(dot(vNormal, lightDir), 0.0);
-    vec3 diffuse = diff * lightColor;
-
-    // Combine the two to get the final color
-    vec3 finalColor = (ambient + diffuse) * vec4(vUv, 0.5, 1).xyz;
-
-    gl_FragColor = vec4(finalColor, 1.0);
-}`;
+`;
 
 
 const planeMaterial = new THREE.ShaderMaterial({
+  side: THREE.DoubleSide,
   vertexShader: vertexShader,
   fragmentShader: fragmentShader,
   uniforms: {
     iTime: {
       value: 0
-    }
-  }
+    },
+    iResolution:  { value: new THREE.Vector2() },
+  },
+  transparent: true,
+  opacity: 0.7
 });
 const plane = new THREE.Mesh(planeGeometry, planeMaterial);
 scene.add(plane);
 
 plane.rotation.x= -Math.PI*0.5
-return plane
+return {plane, planeMaterial}
 }
