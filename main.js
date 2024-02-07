@@ -24,7 +24,7 @@ function init(){
   const dirLight = new THREE.DirectionalLight(0xffeedd, 2);// dirLight.position = new THREE.Vector3(1, 1, 1)
     scene.add(dirLight)
   const {planeMaterial: seaMaterial } = bumpy({ app, scene, camera, renderer })
-  seaMaterial.uniforms.iResolution.value.set(window.innerWidth, window.innerHeight)
+  //seaMaterial.uniforms.iResolution.value.set(window.innerWidth, window.innerHeight)
     // 3. Generate Simplex Noise
     const noise2D = createNoise2D();
   cards({ scene })
@@ -63,7 +63,7 @@ function init(){
     oz = Math.floor(camera.position.z/2048)
     // console.log(camera.position.x, camera.position.z, ox, oz)
     createChunks(ox, oz, 8)
-    seaMaterial.uniforms.iTime.value += deltaTime/1000;
+    // seaMaterial.uniforms.iTime.value += deltaTime/1000;
     renderer.render(scene, camera);
     t1 = Date.now()
     deltaTime = t1-t0
