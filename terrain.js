@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 export default function terrain(noise2D, { scene, camera }, ox = 0, oz = 0, w, h, layers = [w/4, w/2, w]) {
  // 2. Create the Plane
- const geometry = new THREE.PlaneGeometry(w, h, 8, 8);
+ const geometry = new THREE.PlaneGeometry(w, h, 128, 128);
 
  const vertices = geometry.attributes.position.array;
 
@@ -15,12 +15,12 @@ export default function terrain(noise2D, { scene, camera }, ox = 0, oz = 0, w, h
   geometry.computeVertexNormals(); // To smooth the shading
 
   const texture = new THREE.TextureLoader().load('/smooth+sand+dunes-2048x2048.jpg')
+  texture.repeat.set(1, 1);
   // 4. Add the Plane to the Scene
   const material = new THREE.MeshStandardMaterial({
     color: 0xffffff,
     wireframe: false,
     map: texture,
-    scale: new THREE.Vector2(0.1, 0.1),
 });
   const plane = new THREE.Mesh(geometry, material);
   plane.rotation.y = -Math.PI

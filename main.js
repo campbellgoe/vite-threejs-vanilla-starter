@@ -35,13 +35,13 @@ function init(){
     for(let y = -spread; y < spread; y++){
       for(let x = -spread; x < spread; x++){
         if(map.has(`${x-ox},${y+oy}`)) continue;
-      const plane = terrain(noise2D, { scene, camera }, x*2048-ox*2048, y*2048+oy*2048, 2048, 2048, [512, 2048, 8192, 32768])
+      const plane = terrain(noise2D, { scene, camera }, x*1024-ox*1024, y*1024+oy*1024, 1024, 1024, [2048, 8192, 32768])
       map.set(`${x-ox},${y+oy}`, plane)
       }
     }
   }
-  for(let y = -8; y < 8; y+=2){
-    for(let x = -8; x < 8; x+=2){
+  for(let y = -4; y < 4; y++){
+    for(let x = -4; x < 4; x++){
   createChunks(x, y, 1)
     }
   }

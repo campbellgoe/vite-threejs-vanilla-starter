@@ -19,7 +19,7 @@ void main() {
     // Modify the z position based on noise
     float noise = pseudoNoise(position);
     vec3 pos = position;
-    pos.z += noise * 100.0; // Adjust the multiplier to change the height variation
+    pos.z += noise * 10.0; // Adjust the multiplier to change the height variation
     pos.z += sin(iTime*0.1)*0.1;
     vNormal = normalMatrix * normal; // Transform the normal to camera space
     gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
@@ -72,29 +72,28 @@ void main() {
   //Add some gradient
   t*=exp(-length2(abs(0.7*vUv - 1.0)));	
   //Make it blue!
-  gl_FragColor = vec4(t * vec3(0.1, 1.1*t, pow(t, 0.5-t)), 0.7);
+  gl_FragColor = vec4(t * vec3(0.3, 1.3*t, pow(t*1.5, 0.5-t)), 0.7);
 }
 
 `;
 
 
-const planeMaterial = new THREE.MeshStandardMaterial({
-  side: THREE.FrontSide,
-  // vertexShader: vertexShader,
-  // fragmentShader: fragmentShader,
-  // uniforms: {
-  //   iTime: {
-  //     value: 0
-  //   },
-  //   iResolution:  { value: new THREE.Vector2() },
-  // },
-  color: 0x4466ff,
+const planeMaterial = new THREE.ShaderMaterial({
+  side: THREE.DoubleSide,
+  vertexShader: vertexShader,
+  fragmentShader: fragmentShader,
+  uniforms: {
+    iTime: {
+      value: 0
+    },
+    iResolution:  { value: new THREE.Vector2() },
+  },
   transparent: true,
   opacity: 0.7
 });
 const plane = new THREE.Mesh(planeGeometry, planeMaterial);
 scene.add(plane);
-plane.position.y = -1
+
 plane.rotation.x= -Math.PI*0.5
 return {plane, planeMaterial}
 }
