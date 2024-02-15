@@ -19,7 +19,7 @@ function init(){
 
   const controls = new MapControls(camera, renderer.domElement);
   controls.enableDamping = true
-  controls.maxPolarAngle = Math.PI/4
+  controls.maxPolarAngle = Math.PI/2.5
   controls.maxDistance = 1000
   const dirLight = new THREE.DirectionalLight(0xffeedd, 2);// dirLight.position = new THREE.Vector3(1, 1, 1)
     scene.add(dirLight)
