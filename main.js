@@ -8,7 +8,9 @@ import cards from './cards';
 import terrain from './terrain';
 
 import { createNoise2D } from 'simplex-noise';
-
+const getDistXZ = (posA, posB) => {
+  return Math.sqrt((posB.x - posA.x)**2, (posB.z - posA.z)**2)
+}
 function init(){
   const app = document.getElementById('app')
   const scene = new THREE.Scene();
@@ -51,6 +53,7 @@ function init(){
         const planeGeometry = new THREE.PlaneGeometry(w, h, wSegments, hSegments);
       const plane = terrain({geometry: planeGeometry, material: terrainMaterial, noise2D}, {ox: x*w-ox*w, oz: y*h+oy*h, w, h, layers: [512, 2048, 8192, 32768, 32768*4]})
       map.set(`${x-ox},${y+oy}`, plane)
+      console.log('creating', x-ox, y+oy)
       scene.add(plane)
       plane.geometry.computeVertexNormals(); // To smooth the shading
       }
@@ -83,6 +86,7 @@ function init(){
     // controls.update(); // Only required if controls.enableDamping = true, or if controls.autoRotate = true
     ox = Math.floor(camera.position.x/2048)
     oz = Math.floor(camera.position.z/2048)
+
     // console.log(camera.position.x, camera.position.z, ox, oz)
     createChunks(ox, oz, 8)
     seaMaterial.uniforms.iTime.value += deltaTime/1000;
@@ -104,7 +108,19 @@ function init(){
       card.position.set(closestIntersection.point.x, closestIntersection.point.y, closestIntersection.point.z); // Adjust the '+ 1' offset as needed
       card.lookAt( camera.position );
     }
-
+if(Math.random()>0.95){
+    map.forEach((plane, coordsStr) => {
+      const dist = getDistXZ(plane.position, camera.position)
+      // console.log(dist)
+      if(dist > 2**16){
+        // console.log('too far')
+        plane.geometry.dispose()
+        plane.material.dispose()
+        map.delete(coordsStr)
+        console.log('deleting', coordsStr)
+      }
+    })
+  }
     renderer.render(scene, camera);
     t1 = Date.now()
     deltaTime = t1-t0
