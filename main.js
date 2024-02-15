@@ -1,91 +1,106 @@
 import './style.css'
 
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { MapControls } from 'three/examples/jsm/controls/MapControls.js'
+import bumpy from './bumpy'
+import cards from './cards';
+import terrain from './terrain';
 
-const app = document.getElementById('app')
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-app.appendChild(renderer.domElement);
+import { createNoise2D } from 'simplex-noise';
 
-const controls = new OrbitControls(camera, renderer.domElement);
-const planeGeometry = new THREE.PlaneGeometry(100, 100, 6, 6)
-const vertexShader = `
-varying vec2 vUv;
-varying vec3 vNormal;
-
-// Basic noise-like function
-float pseudoNoise(vec3 point) {
-    return fract(sin(dot(point.xyz, vec3(12.9898, 78.233, 45.5432))) * 43758.5453);
-}
-
-void main() {
-    vUv = uv;
-
-    // Modify the z position based on noise
-    float noise = pseudoNoise(position);
-    vec3 pos = position;
-    pos.z += noise * 10.0; // Adjust the multiplier to change the height variation
-
-    vNormal = normalMatrix * normal; // Transform the normal to camera space
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-}`;
-
-// Fragment shader (basic for now)
-const fragmentShader = `
-varying vec2 vUv;
-varying vec3 vNormal;
-
-void main() {
-    // Simple directional light properties
-    vec3 lightColor = vec3(1.0, 1.0, 1.0);
-    vec3 lightDir = normalize(vec3(0.5, 1.0, 0.75)); // Direction to the light source
-    float ambientStrength = 0.1;
-
-    // Ambient lighting
-    vec3 ambient = ambientStrength * lightColor;
-
-    // Diffuse lighting
-    float diff = max(dot(vNormal, lightDir), 0.0);
-    vec3 diffuse = diff * lightColor;
-
-    // Combine the two to get the final color
-    vec3 finalColor = (ambient + diffuse) * vec4(vUv, 0.5, 1).xyz;
-
-    gl_FragColor = vec4(finalColor, 1.0);
-}`;
-
-
-const planeMaterial = new THREE.ShaderMaterial({
-  vertexShader: vertexShader,
-  fragmentShader: fragmentShader
-});
-const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-scene.add(plane);
-
-plane.rotation.x= -Math.PI*0.5
-
-
-const light = new THREE.PointLight(0xffffff, 1, 100);
-light.position.set(1, 1, 1);
-scene.add(light);
-console.log(light)
-camera.position.z = 50;
-camera.position.y = 10
-
-function animate() {
-  requestAnimationFrame(animate);
-  controls.update(); // Only required if controls.enableDamping = true, or if controls.autoRotate = true
-
-  renderer.render(scene, camera);
-}
-const onResize = () => {
+function init(){
+  const app = document.getElementById('app')
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 30000);
+  const renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-}
+  app.appendChild(renderer.domElement);
 
-window.addEventListener('resize', onResize);
-animate();
+  const controls = new MapControls(camera, renderer.domElement);
+  controls.enableDamping = true
+  controls.maxPolarAngle = Math.PI/2.5
+  controls.maxDistance = 1000
+  const dirLight = new THREE.DirectionalLight(0xffeedd, 2);// dirLight.position = new THREE.Vector3(1, 1, 1)
+    scene.add(dirLight)
+  const {planeMaterial: seaMaterial } = bumpy({ app, scene, camera, renderer })
+  seaMaterial.uniforms.iResolution.value.set(window.innerWidth, window.innerHeight)
+    // 3. Generate Simplex Noise
+    const noise2D = createNoise2D();
+  cards({ scene })
+  let ox = 0
+  let oz = 0
+  let map = new Map()
+  const w = 2048
+  const h = 2048
+  const wSegments = 128
+  const hSegments = 128
+  
+  const sandTexture = new THREE.TextureLoader().load('/smooth+sand+dunes-2048x2048.jpg')
+  sandTexture.repeat.set(1, 1);
+  // 4. Add the Plane to the Scene
+  const terrainMaterial = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    wireframe: false,
+    map: sandTexture,
+});
+  function createChunks(ox = 0, oy = 0, spread = 4){
+    for(let y = -spread; y < spread; y++){
+      for(let x = -spread; x < spread; x++){
+        if(map.has(`${x-ox},${y+oy}`)) continue;
+        const planeGeometry = new THREE.PlaneGeometry(w, h, wSegments, hSegments);
+      const plane = terrain({geometry: planeGeometry, material: terrainMaterial, noise2D}, {ox: x*w-ox*w, oz: y*h+oy*h, w, h, layers: [512, 2048, 8192, 32768]})
+      map.set(`${x-ox},${y+oy}`, plane)
+      scene.add(plane)
+      plane.geometry.computeVertexNormals(); // To smooth the shading
+      }
+    }
+  }
+  for(let y = -8; y < 8; y+=2){
+    for(let x = -8; x < 8; x+=2){
+  createChunks(x, y, 1)
+    }
+  }
+  const light = new THREE.PointLight(0xffffff, 1, 100);
+  light.position.set(1, 1, 1);
+  scene.add(light);
+  console.log(light)
+  camera.position.z = 50;
+  camera.position.y = 10
+
+
+  let t0, t1
+  let deltaTime = 0.001
+  function animate() {
+    t0 = Date.now()
+    // requestAnimationFrame(animate);
+    // controls.update(); // Only required if controls.enableDamping = true, or if controls.autoRotate = true
+    ox = Math.floor(camera.position.x/2048)
+    oz = Math.floor(camera.position.z/2048)
+    // console.log(camera.position.x, camera.position.z, ox, oz)
+    createChunks(ox, oz, 8)
+    seaMaterial.uniforms.iTime.value += deltaTime/1000;
+    renderer.render(scene, camera);
+    t1 = Date.now()
+    deltaTime = t1-t0
+    const fps = 1000/(t1-t0)
+  }
+  controls.addEventListener("change", () => {
+    animate()
+  });
+  const onResize = () => {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    seaMaterial.iResolution.value.set(window.innerWidth, window.innerHeight)
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+  }
+
+  window.addEventListener('resize', onResize);
+  animate();
+  setTimeout(()=>{
+
+    document.getElementById('progress').remove()
+    animate()
+  }, 1000)
+}
+init()
