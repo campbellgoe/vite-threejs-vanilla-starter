@@ -70,11 +70,11 @@ function init(){
   card.position.set(0, 0, -10); // Position the card in front of the camera
 
   // Add the card to the camera, not the scene
-  camera.add(card);
+  // camera.add(card);
 
   // Make sure to add the camera to the scene
-  scene.add(camera);
-
+  scene.add(card);
+  const raycaster = new THREE.Raycaster();
   let t0, t1
   let deltaTime = 0.001
   function animate() {
@@ -86,6 +86,25 @@ function init(){
     // console.log(camera.position.x, camera.position.z, ox, oz)
     createChunks(ox, oz, 8)
     seaMaterial.uniforms.iTime.value += deltaTime/1000;
+
+    const cardPosition = new THREE.Vector3();
+    camera.getWorldPosition(cardPosition);
+  
+    // Set the raycaster to cast from the card's position downwards
+    // raycaster.set(cardPosition, new THREE.Vector3(0, -1, 0));
+    raycaster.setFromCamera({ x: 0, y: 0 }, camera)
+  // const plane = map.get(`${ox},${oz}`)
+    // Perform the raycast
+    const intersects = raycaster.intersectObjects(scene.children , true);
+  
+    // Check if there are any intersections with the terrain
+    if (intersects.length > 0) {
+      // Move the card to the intersection point, with a slight offset if desired
+      const closestIntersection = intersects[0];
+      card.position.set(closestIntersection.point.x, closestIntersection.point.y, closestIntersection.point.z); // Adjust the '+ 1' offset as needed
+      card.lookAt( camera.position );
+    }
+
     renderer.render(scene, camera);
     t1 = Date.now()
     deltaTime = t1-t0
