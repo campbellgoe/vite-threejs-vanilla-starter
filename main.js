@@ -49,7 +49,7 @@ function init(){
       for(let x = -spread; x < spread; x++){
         if(map.has(`${x-ox},${y+oy}`)) continue;
         const planeGeometry = new THREE.PlaneGeometry(w, h, wSegments, hSegments);
-      const plane = terrain({geometry: planeGeometry, material: terrainMaterial, noise2D}, {ox: x*w-ox*w, oz: y*h+oy*h, w, h, layers: [512, 2048, 8192, 32768]})
+      const plane = terrain({geometry: planeGeometry, material: terrainMaterial, noise2D}, {ox: x*w-ox*w, oz: y*h+oy*h, w, h, layers: [512, 2048, 8192, 32768, 32768*4]})
       map.set(`${x-ox},${y+oy}`, plane)
       scene.add(plane)
       plane.geometry.computeVertexNormals(); // To smooth the shading
@@ -66,7 +66,7 @@ function init(){
   scene.add(light);
   console.log(light)
   camera.position.z = 50;
-  camera.position.y = 10
+  camera.position.y = 50
 
 
   let t0, t1
