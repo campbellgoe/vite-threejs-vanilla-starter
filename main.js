@@ -24,24 +24,40 @@ function init(){
   const dirLight = new THREE.DirectionalLight(0xffeedd, 2);// dirLight.position = new THREE.Vector3(1, 1, 1)
     scene.add(dirLight)
   const {planeMaterial: seaMaterial } = bumpy({ app, scene, camera, renderer })
-  //seaMaterial.uniforms.iResolution.value.set(window.innerWidth, window.innerHeight)
+  seaMaterial.uniforms.iResolution.value.set(window.innerWidth, window.innerHeight)
     // 3. Generate Simplex Noise
     const noise2D = createNoise2D();
   cards({ scene })
   let ox = 0
   let oz = 0
   let map = new Map()
+  const w = 2048
+  const h = 2048
+  const wSegments = 128
+  const hSegments = 128
+  
+  const sandTexture = new THREE.TextureLoader().load('/smooth+sand+dunes-2048x2048.jpg')
+  sandTexture.repeat.set(1, 1);
+  // 4. Add the Plane to the Scene
+  const terrainMaterial = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    wireframe: false,
+    map: sandTexture,
+});
   function createChunks(ox = 0, oy = 0, spread = 4){
     for(let y = -spread; y < spread; y++){
       for(let x = -spread; x < spread; x++){
         if(map.has(`${x-ox},${y+oy}`)) continue;
-      const plane = terrain(noise2D, { scene, camera }, x*1024-ox*1024, y*1024+oy*1024, 1024, 1024, [2048, 8192, 32768])
+        const planeGeometry = new THREE.PlaneGeometry(w, h, wSegments, hSegments);
+      const plane = terrain({geometry: planeGeometry, material: terrainMaterial, noise2D}, {ox: x*w-ox*w, oz: y*h+oy*h, w, h, layers: [512, 2048, 8192, 32768]})
       map.set(`${x-ox},${y+oy}`, plane)
+      scene.add(plane)
+      plane.geometry.computeVertexNormals(); // To smooth the shading
       }
     }
   }
-  for(let y = -4; y < 4; y++){
-    for(let x = -4; x < 4; x++){
+  for(let y = -8; y < 8; y+=2){
+    for(let x = -8; x < 8; x+=2){
   createChunks(x, y, 1)
     }
   }
@@ -63,7 +79,7 @@ function init(){
     oz = Math.floor(camera.position.z/2048)
     // console.log(camera.position.x, camera.position.z, ox, oz)
     createChunks(ox, oz, 8)
-    // seaMaterial.uniforms.iTime.value += deltaTime/1000;
+    seaMaterial.uniforms.iTime.value += deltaTime/1000;
     renderer.render(scene, camera);
     t1 = Date.now()
     deltaTime = t1-t0
