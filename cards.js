@@ -30,6 +30,5 @@ const cardMaterial = new THREE.MeshStandardMaterial({ map: cardTexture })
 const cardGeometry = new RoundedBoxGeometry(1, 1.4, 0.05, 2, 0.05, 2, 2, 2, 2, 2)
 
 const card = new THREE.Mesh(cardGeometry, cardMaterial)
-scene.add(card)
 return card
 }

@@ -27,7 +27,7 @@ function init(){
   seaMaterial.uniforms.iResolution.value.set(window.innerWidth, window.innerHeight)
     // 3. Generate Simplex Noise
     const noise2D = createNoise2D();
-  cards({ scene })
+  const card = cards({ scene })
   let ox = 0
   let oz = 0
   let map = new Map()
@@ -67,7 +67,13 @@ function init(){
   console.log(light)
   camera.position.z = 50;
   camera.position.y = 50
+  card.position.set(0, 0, -10); // Position the card in front of the camera
 
+  // Add the card to the camera, not the scene
+  camera.add(card);
+
+  // Make sure to add the camera to the scene
+  scene.add(camera);
 
   let t0, t1
   let deltaTime = 0.001
@@ -89,10 +95,12 @@ function init(){
     animate()
   });
   const onResize = () => {
+    seaMaterial?.iResolution?.value.set(window.innerWidth, window.innerHeight)
+    
     renderer.setSize(window.innerWidth, window.innerHeight);
-    seaMaterial.iResolution.value.set(window.innerWidth, window.innerHeight)
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
+    animate()
   }
 
   window.addEventListener('resize', onResize);
