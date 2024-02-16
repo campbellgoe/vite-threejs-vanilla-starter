@@ -1,5 +1,5 @@
 import './style.css'
-
+import Rand from 'rand-seed';
 import * as THREE from 'three';
 // import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js'
@@ -11,6 +11,7 @@ import { createNoise2D } from 'simplex-noise';
 const getDistXZ = (posA, posB) => {
   return Math.sqrt((posB.x - posA.x)**2, (posB.z - posA.z)**2)
 }
+const randomSeed = 'hello world'
 function init(){
   const app = document.getElementById('app')
   const scene = new THREE.Scene();
@@ -25,10 +26,11 @@ function init(){
   controls.maxDistance = 3000
   const dirLight = new THREE.DirectionalLight(0xffeedd, 2);// dirLight.position = new THREE.Vector3(1, 1, 1)
     scene.add(dirLight)
-  const {planeMaterial: seaMaterial } = bumpy({ app, scene, camera, renderer })
+  const {plane: seaMesh, planeMaterial: seaMaterial } = bumpy({ app, scene, camera, renderer })
   seaMaterial.uniforms.iResolution.value.set(window.innerWidth, window.innerHeight)
     // 3. Generate Simplex Noise
-    const noise2D = createNoise2D();
+    const rand = new Rand(randomSeed);
+    const noise2D = createNoise2D(() => rand.next());
   const card = cards({ scene })
   let ox = 0
   let oz = 0
@@ -90,7 +92,7 @@ function init(){
     // console.log(camera.position.x, camera.position.z, ox, oz)
     createChunks(ox, oz, 8)
     seaMaterial.uniforms.iTime.value += deltaTime/1000;
-
+    seaMesh.position.set(camera.position.x, seaMesh.position.y, camera.position.z)
   //   const cardPosition = new THREE.Vector3();
   //   camera.getWorldPosition(cardPosition);
   
