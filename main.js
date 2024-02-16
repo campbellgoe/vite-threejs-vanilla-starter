@@ -22,8 +22,9 @@ function init(){
 
   const controls = new MapControls(camera, renderer.domElement);
   controls.enableDamping = true
-  controls.maxPolarAngle = Math.PI/2.5
+  controls.maxPolarAngle = Math.PI/5
   controls.maxDistance = 3000
+  controls.minDistance = 1000
   const dirLight = new THREE.DirectionalLight(0xffeedd, 2);// dirLight.position = new THREE.Vector3(1, 1, 1)
     scene.add(dirLight)
   const {plane: seaMesh, planeMaterial: seaMaterial } = bumpy({ app, scene, camera, renderer })
