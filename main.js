@@ -37,8 +37,8 @@ function init(){
   let map = new Map()
   const w = 2048
   const h = 2048
-  const wSegments = 128
-  const hSegments = 128
+  const wSegments = 64
+  const hSegments = 64
   
   const sandTexture = new THREE.TextureLoader().load('/smooth+sand+dunes-2048x2048.jpg')
   sandTexture.repeat.set(1, 1);
