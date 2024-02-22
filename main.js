@@ -8,6 +8,10 @@ import cards from './cards';
 import terrain from './terrain';
 
 import { createNoise2D } from 'simplex-noise';
+import { createRoot } from 'react-dom/client'
+import React, { useRef, useState } from 'react'
+import { Canvas, useFrame } from '@react-three/fiber'
+const progressEl = document.getElementById('progress')
 const getDistXZ = (posA, posB) => {
   return Math.sqrt((posB.x - posA.x)**2, (posB.z - posA.z)**2)
 }
@@ -50,13 +54,17 @@ function init(){
     map: sandTexture,
 });
   function createChunks(ox = 0, oy = 0, spread = 4){
+    const count = spread*4
+    let i = 0
     for(let y = -spread; y < spread; y++){
       for(let x = -spread; x < spread; x++){
         if(map.has(`${x-ox},${y+oy}`)) continue;
+        i++
         const planeGeometry = new THREE.PlaneGeometry(w, h, wSegments, hSegments);
       const plane = terrain({geometry: planeGeometry, material: terrainMaterial, noise2D}, {ox: x*w-ox*w, oz: y*h+oy*h, w, h, layers: [512, 2048, 8192, 32768, 32768*4]})
       map.set(`${x-ox},${y+oy}`, plane)
       console.log('creating', x-ox, y+oy)
+      progressEl.textContent = `Loading v${APP_VERSION} ${i/count*100}%`
       scene.add(plane)
       plane.geometry.computeVertexNormals(); // To smooth the shading
       }
@@ -145,7 +153,7 @@ if(Math.random()>0.95){
   animate();
   setTimeout(()=>{
 
-    document.getElementById('progress').remove()
+    progressEl.remove()
     animate()
   }, 1000)
 }
